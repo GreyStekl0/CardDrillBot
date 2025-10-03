@@ -1,6 +1,6 @@
 namespace CardDrill.Domain;
 
-internal sealed class UserSession
+sealed class UserSession
 {
     private readonly Queue<Question> _queue = new();
     private Question? _current;

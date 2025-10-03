@@ -1,3 +1,3 @@
 namespace CardDrill.Domain;
 
-internal sealed record Question(string Id, string Text);
+sealed record Question(string Id, string Text);

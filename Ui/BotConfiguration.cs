@@ -4,7 +4,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace CardDrill.Ui;
 
-internal static class BotConfiguration
+static class BotConfiguration
 {
     public static readonly BotCommand[] Commands =
     {

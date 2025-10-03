@@ -6,7 +6,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace CardDrill.Ui.Handlers;
 
-internal sealed class MessageHandler
+sealed class MessageHandler
 {
     private readonly ConcurrentDictionary<long, UserSession> _sessions;
     private readonly IReadOnlyList<Question> _questionBank;

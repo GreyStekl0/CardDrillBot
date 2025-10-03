@@ -5,7 +5,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace CardDrill.Ui.Handlers;
 
-internal static class UpdateDispatcher
+static class UpdateDispatcher
 {
     public static async Task HandleAsync(
         ITelegramBotClient client,

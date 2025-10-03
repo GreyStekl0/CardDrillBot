@@ -3,7 +3,7 @@ using CardDrill.Domain;
 
 namespace CardDrill.Data;
 
-internal static class QuestionRepository
+static class QuestionRepository
 {
     private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web)
     {

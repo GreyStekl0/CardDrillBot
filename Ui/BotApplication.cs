@@ -7,7 +7,7 @@ using Telegram.Bot;
 
 namespace CardDrill.Ui;
 
-internal sealed class BotApplication
+sealed class BotApplication
 {
     private readonly CancellationTokenSource _cancellationSource = new();
     private readonly ConcurrentDictionary<long, UserSession> _sessions = new();
