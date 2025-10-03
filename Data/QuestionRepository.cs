@@ -1,8 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using CardDrill.Domain;
 
 namespace CardDrill.Data;
 
+/// <summary>
+/// Loads the static drill question bank from disk.
+/// </summary>
 static class QuestionRepository
 {
     private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web)
@@ -10,6 +16,9 @@ static class QuestionRepository
         PropertyNameCaseInsensitive = true
     };
 
+    /// <summary>
+    /// Reads all bundled questions into memory.
+    /// </summary>
     public static IReadOnlyList<Question> Load()
     {
         var baseDirectory = AppContext.BaseDirectory ?? Directory.GetCurrentDirectory();

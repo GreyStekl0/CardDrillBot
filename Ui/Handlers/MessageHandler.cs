@@ -1,4 +1,9 @@
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CardDrill.Domain;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -6,6 +11,9 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace CardDrill.Ui.Handlers;
 
+/// <summary>
+/// Applies conversational rules for text messages received from Telegram users.
+/// </summary>
 sealed class MessageHandler
 {
     private readonly ConcurrentDictionary<long, UserSession> _sessions;
@@ -17,10 +25,14 @@ sealed class MessageHandler
         _questionBank = questionBank;
     }
 
+    /// <summary>
+    /// Processes an incoming message and reacts according to the drill flow.
+    /// </summary>
     public async Task HandleAsync(ITelegramBotClient client, Message message, CancellationToken ct)
     {
         if (message.Text is not { } text)
         {
+            // Only text messages participate in the flashcard flow.
             return;
         }
 
@@ -29,6 +41,7 @@ sealed class MessageHandler
 
         if (IsCommand(trimmed, "/start"))
         {
+            // Prepare or reset the session but keep it inactive until /quiz is issued.
             _sessions.AddOrUpdate(
                 chatId,
                 _ =>
@@ -63,6 +76,7 @@ sealed class MessageHandler
 
             quizSession.Activate();
 
+            // Encourage the user before sending the next question.
             await client.SendMessage(
                 chatId,
                 "Поехали!",
@@ -143,6 +157,9 @@ sealed class MessageHandler
     private static bool IsCommand(string text, params string[] candidates)
         => candidates.Any(candidate => string.Equals(text, candidate, StringComparison.OrdinalIgnoreCase));
 
+    /// <summary>
+    /// Builds a compact keyboard with the two drill answers.
+    /// </summary>
     private static ReplyKeyboardMarkup AnswerKeyboard() => new(new[]
     {
         new[]
@@ -155,6 +172,9 @@ sealed class MessageHandler
         ResizeKeyboard = true
     };
 
+    /// <summary>
+    /// Sends the next question in the queue or signals completion when exhausted.
+    /// </summary>
     private async Task SendNextQuestionAsync(ITelegramBotClient client, long chatId, UserSession session, CancellationToken ct)
     {
         if (!session.TryGetNextQuestion(out var question))

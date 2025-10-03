@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using CardDrill.Data;
 using CardDrill.Domain;
 using CardDrill.Ui.Handlers;
@@ -7,11 +10,17 @@ using Telegram.Bot;
 
 namespace CardDrill.Ui;
 
+/// <summary>
+/// Handles Telegram bot start-up, configuration, and shutdown wiring.
+/// </summary>
 sealed class BotApplication
 {
     private readonly CancellationTokenSource _cancellationSource = new();
     private readonly ConcurrentDictionary<long, UserSession> _sessions = new();
 
+    /// <summary>
+    /// Initializes dependencies, registers handlers, and blocks until cancellation.
+    /// </summary>
     public async Task RunAsync()
     {
         Console.CancelKeyPress += OnCancelKeyPress;
@@ -25,6 +34,7 @@ sealed class BotApplication
             return;
         }
 
+        // Preload the static set of questions once to reuse across chat sessions.
         var questionBank = QuestionRepository.Load();
         var messageHandler = new MessageHandler(_sessions, questionBank);
 
@@ -56,6 +66,9 @@ sealed class BotApplication
         }
     }
 
+    /// <summary>
+    /// Cancels background work when the host process is interrupted.
+    /// </summary>
     private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs eventArgs)
     {
         eventArgs.Cancel = true;
