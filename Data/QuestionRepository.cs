@@ -5,27 +5,19 @@ namespace CardDrill.Data;
 
 internal static class QuestionRepository
 {
-    private const string DefaultRelativePath = "Data/questions.json";
-
     private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web)
     {
         PropertyNameCaseInsensitive = true
     };
 
-    public static IReadOnlyList<Question> Load(string? relativePath = null)
+    public static IReadOnlyList<Question> Load()
     {
-        var effectivePath = relativePath ?? DefaultRelativePath;
+        var baseDirectory = AppContext.BaseDirectory ?? Directory.GetCurrentDirectory();
+        var resolvedPath = Path.Combine(baseDirectory, "Data", "questions.json");
 
-        var searchPaths = new[]
+        if (!File.Exists(resolvedPath))
         {
-            effectivePath,
-            Path.Combine(AppContext.BaseDirectory ?? string.Empty, effectivePath)
-        };
-
-        var resolvedPath = searchPaths.FirstOrDefault(File.Exists);
-        if (resolvedPath is null)
-        {
-            throw new FileNotFoundException($"Не найден файл с вопросами: {relativePath}");
+            throw new FileNotFoundException("Не найден файл с вопросами: Data/questions.json");
         }
 
         using var stream = File.OpenRead(resolvedPath);
