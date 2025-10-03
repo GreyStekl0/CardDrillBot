@@ -1,9 +1,4 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using CardDrill.Domain;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -46,7 +41,7 @@ sealed class MessageHandler
                 chatId,
                 _ =>
                 {
-                    var newSession = UserSession.Create(_questionBank);
+                    var newSession = new UserSession(_questionBank);
                     newSession.Stop();
                     return newSession;
                 },
@@ -68,7 +63,7 @@ sealed class MessageHandler
 
         if (IsCommand(trimmed, "/quiz", "начать"))
         {
-            var quizSession = _sessions.GetOrAdd(chatId, _ => UserSession.Create(_questionBank));
+            var quizSession = _sessions.GetOrAdd(chatId, _ => new UserSession(_questionBank));
             if (!quizSession.HasQuestions)
             {
                 quizSession.Reset(_questionBank);

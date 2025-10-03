@@ -8,7 +8,7 @@ sealed class UserSession
     private readonly Queue<Question> _queue = new();
     private Question? _current;
 
-    private UserSession(IEnumerable<Question> questions)
+    public UserSession(IEnumerable<Question> questions)
     {
         Reset(questions);
     }
@@ -16,11 +16,6 @@ sealed class UserSession
     public bool IsActive { get; private set; }
 
     public bool HasQuestions => _queue.Count > 0 || _current is not null;
-
-    /// <summary>
-    /// Factory helper to encapsulate private constructor usage.
-    /// </summary>
-    public static UserSession Create(IEnumerable<Question> questions) => new(questions);
 
     /// <summary>
     /// Marks the session as active allowing answers to be processed.

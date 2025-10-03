@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
 using CardDrill.Data;
 using CardDrill.Domain;
 using CardDrill.Ui.Handlers;
