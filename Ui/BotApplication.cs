@@ -41,7 +41,7 @@ sealed class BotApplication
         var receiverOptions = BotConfiguration.CreateReceiverOptions();
 
         bot.StartReceiving(
-            updateHandler: (client, update, ct) => UpdateDispatcher.HandleAsync(client, update, ct, messageHandler),
+            updateHandler: (client, update, ct) => UpdateDispatcher.HandleAsync(client, update, messageHandler, ct),
             errorHandler: UpdateDispatcher.HandleErrorAsync,
             receiverOptions: receiverOptions,
             cancellationToken: _cancellationSource.Token);

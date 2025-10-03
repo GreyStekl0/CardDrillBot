@@ -16,8 +16,8 @@ static class UpdateDispatcher
     public static async Task HandleAsync(
         ITelegramBotClient client,
         Update update,
-        CancellationToken ct,
-        MessageHandler messageHandler)
+        MessageHandler messageHandler,
+        CancellationToken ct)
     {
         try
         {

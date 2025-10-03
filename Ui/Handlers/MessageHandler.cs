@@ -9,16 +9,8 @@ namespace CardDrill.Ui.Handlers;
 /// <summary>
 /// Applies conversational rules for text messages received from Telegram users.
 /// </summary>
-sealed class MessageHandler
+sealed class MessageHandler(ConcurrentDictionary<long, UserSession> sessions, IReadOnlyList<Question> questionBank)
 {
-    private readonly ConcurrentDictionary<long, UserSession> _sessions;
-    private readonly IReadOnlyList<Question> _questionBank;
-
-    public MessageHandler(ConcurrentDictionary<long, UserSession> sessions, IReadOnlyList<Question> questionBank)
-    {
-        _sessions = sessions;
-        _questionBank = questionBank;
-    }
 
     /// <summary>
     /// Processes an incoming message and reacts according to the drill flow.
@@ -37,17 +29,17 @@ sealed class MessageHandler
         if (IsCommand(trimmed, "/start"))
         {
             // Prepare or reset the session but keep it inactive until /quiz is issued.
-            _sessions.AddOrUpdate(
+            sessions.AddOrUpdate(
                 chatId,
                 _ =>
                 {
-                    var newSession = new UserSession(_questionBank);
+                    var newSession = new UserSession(questionBank);
                     newSession.Stop();
                     return newSession;
                 },
                 (_, existing) =>
                 {
-                    existing.Reset(_questionBank);
+                    existing.Reset(questionBank);
                     existing.Stop();
                     return existing;
                 });
@@ -63,10 +55,10 @@ sealed class MessageHandler
 
         if (IsCommand(trimmed, "/quiz", "начать"))
         {
-            var quizSession = _sessions.GetOrAdd(chatId, _ => new UserSession(_questionBank));
+            var quizSession = sessions.GetOrAdd(chatId, _ => new UserSession(questionBank));
             if (!quizSession.HasQuestions)
             {
-                quizSession.Reset(_questionBank);
+                quizSession.Reset(questionBank);
             }
 
             quizSession.Activate();
@@ -84,7 +76,7 @@ sealed class MessageHandler
 
         if (IsCommand(trimmed, "/stop", "стоп"))
         {
-            if (_sessions.TryGetValue(chatId, out var existing))
+            if (sessions.TryGetValue(chatId, out var existing))
             {
                 existing.Stop();
                 await client.SendMessage(
@@ -104,7 +96,7 @@ sealed class MessageHandler
             return;
         }
 
-        if (!_sessions.TryGetValue(chatId, out var session) || !session.IsActive)
+        if (!sessions.TryGetValue(chatId, out var session) || !session.IsActive)
         {
             await client.SendMessage(
                 chatId,
@@ -155,14 +147,13 @@ sealed class MessageHandler
     /// <summary>
     /// Builds a compact keyboard with the two drill answers.
     /// </summary>
-    private static ReplyKeyboardMarkup AnswerKeyboard() => new(new[]
-    {
-        new[]
-        {
+    private static ReplyKeyboardMarkup AnswerKeyboard() => new(
+    [
+        [
             new KeyboardButton("Знаю"),
             new KeyboardButton("Не знаю")
-        }
-    })
+        ]
+    ])
     {
         ResizeKeyboard = true
     };
@@ -170,7 +161,7 @@ sealed class MessageHandler
     /// <summary>
     /// Sends the next question in the queue or signals completion when exhausted.
     /// </summary>
-    private async Task SendNextQuestionAsync(ITelegramBotClient client, long chatId, UserSession session, CancellationToken ct)
+    private static async Task SendNextQuestionAsync(ITelegramBotClient client, long chatId, UserSession session, CancellationToken ct)
     {
         if (!session.TryGetNextQuestion(out var question))
         {
